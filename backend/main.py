@@ -195,9 +195,13 @@ menu_db = [
   }
 ]
 
+@app.get('/')
+def home():
+    return {"message": "eh"}
+
+
 @app.get('/menuData/')
 async def menuData():
-    print('huh')
     return menu_db
 
 @app.put('/editFood/')
@@ -214,4 +218,4 @@ def deleteFood(item, restaurant_id):
     return
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host = 'localhost', port=5000, reload = True)
+    uvicorn.run("main:app", host = '192.168.1.4', port=5000, reload = True)

@@ -241,29 +241,42 @@
 //     },
 //   },
 // ];
-menuItems = [];
-
+const fsapi_url = "192.168.1.4";
 let currentLanguage = "en"; // default language
-
-async function createMenuItems() {
+async function getMenuData() {
+  if (document.getElementById("loader")) {
+    document.getElementById("loader").style.display = "block";
+  }
   try {
-    response = await fetch("http://localhost:5000/menuData/", {
+    response = await fetch(`http://${fsapi_url}:5000/menuData/`, {
       method: "GET",
     });
     data = await response.json();
-    const menuItems = data;
-    const menuGrid = document.querySelector(".menu-grid");
-    console.log(menuItems);
-    menuGrid.innerHTML = "";
+  } catch (err) {
+    console.log(err);
+    alert(err);
+  } finally {
+    if (document.getElementById("loader")) {
+      document.getElementById("loader").style.display = "none";
+    }
+    return data;
+  }
+}
 
-    menuItems.forEach((item) => {
-      const menuItem = document.createElement("div");
-      menuItem.className = "menu-item";
-      menuItem.setAttribute("data-category", item.category);
-      menuItem.onclick = () => openModal(item);
+async function createMenuItems() {
+  const menuGrid = document.querySelector(".menu-grid");
+  menuItems = await getMenuData();
 
-      menuItem.innerHTML = `
-                  <img src="${item.image}" alt="${item.name}" />
+  menuGrid.innerHTML = "";
+
+  menuItems.forEach((item) => {
+    const menuItem = document.createElement("div");
+    menuItem.className = "menu-item";
+    menuItem.setAttribute("data-category", item.category);
+    menuItem.onclick = () => openModal(item);
+
+    menuItem.innerHTML = `
+                  <img src="${item.image}" loading='lazy' alt="${item.name}" />
                   <div class="menu-item-content">
                     <div class="menu-item-title">${item.name}</div>
                     <p class="menu-item-description">
@@ -276,15 +289,13 @@ async function createMenuItems() {
                   </div>
                 `;
 
-      menuGrid.appendChild(menuItem);
-    });
-  } catch (err) {
-    console.log(err);
-  }
+    menuGrid.appendChild(menuItem);
+  });
 }
 
 function openModal(item) {
   const modal = document.getElementById("menuModal");
+
   document.getElementById("modalImage").src = item.image;
   document.getElementById("modalTitle").textContent = item.name;
   document.getElementById("modalDescription").textContent =
@@ -545,38 +556,42 @@ const menuData = [
 ];
 
 const carousel = document.getElementById("hero-carousel");
+async function loadHero() {
+  menuItems = await getMenuData();
+  console.log(menuItems);
+  menuItems.forEach((item) => {
+    const slide = document.createElement("div");
+    slide.className = "swiper-slide";
 
-menuData.forEach((item) => {
-  const slide = document.createElement("div");
-  slide.className = "swiper-slide";
-
-  slide.innerHTML = `
-                <div class="hero">
-                  ${
-                    item.offer
-                      ? `<div class="promo-price">${item.price}</div>`
-                      : ""
-                  }
-                  ${
-                    item.offer
-                      ? `<div class="limited-time" data-key="limitedTime">only for limited time</div>`
-                      : ""
-                  }
-                  <div class="main-title" data-key="mainTitle">${
-                    item.name
-                  }</div>
-                  <img class="burger-img" src="${item.image}" alt="${
-    item.name
-  }" />
-                  <div class="description">
-                    <h3 data-key="ourTibs">OUR ${item.name}</h3>
-                    <p data-key="desc">${item.description}</p>
+    slide.innerHTML = `
+                  <div class="hero">
+                    ${
+                      item.offer
+                        ? `<div class="promo-price">${item.price}</div>`
+                        : ""
+                    }
+                    ${
+                      item.offer
+                        ? `<div class="limited-time" data-key="limitedTime">only for limited time</div>`
+                        : ""
+                    }
+                    <div class="main-title" data-key="mainTitle">${
+                      item.name
+                    }</div>
+                    <img class="burger-img" loading='lazy' src="${
+                      item.image
+                    }" alt="${item.name}" />
+                    <div class="description">
+                      <h3 data-key="ourTibs">OUR ${item.name}</h3>
+                      <p data-key="desc">${item.description}</p>
+                    </div>
+                    <button class="order-btn" data-key="orderNow">ORDER NOW</button>
                   </div>
-                  <button class="order-btn" data-key="orderNow">ORDER NOW</button>
-                </div>
-              `;
-  carousel.appendChild(slide);
-});
+                `;
+    carousel.appendChild(slide);
+  });
+}
+loadHero();
 
 // Initialize Swiper
 const swiper = new Swiper(".hero-swiper", {

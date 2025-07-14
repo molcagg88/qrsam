@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Menu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Swiper CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+    />
+
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+      }
+
+      .modal-content {
+        background-color: #2b2b2b;
+        padding: 1.5rem;
+        border-radius: 12px;
+        max-width: 600px;
+        width: 95%;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        margin: auto;
+        transform: scale(0.9);
+        opacity: 0;
+        transition: all 0.3s ease-in-out;
+      }
+
+      .modal.active .modal-content {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      .modal-close {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+        font-size: 1.5rem;
+        color: #fff;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0.5rem;
+        transition: transform 0.2s ease;
+      }
+
+      .modal-close:hover {
+        transform: scale(1.1);
+      }
+
+      .modal-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+
+      .modal-title {
+        font-size: 1.75rem;
+        color: #f7a400;
+        margin-bottom: 0.75rem;
+      }
+
+      .modal-description {
+        color: #fff;
+        font-size: 1rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        max-height: 200px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+      }
+
+      .modal-price {
+        font-size: 1.25rem;
+        color: #f7a400;
+        font-weight: bold;
+      }
+
+      @media (max-width: 768px) {
+        .modal-content {
+          width: 90%;
+          padding: 1rem;
+        }
+
+        .modal-image {
+          height: 200px;
+        }
+
+        .modal-title {
+          font-size: 1.5rem;
+        }
+
+        .modal-description {
+          font-size: 0.9rem;
+        }
+
+        .modal-price {
+          font-size: 1.1rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .modal-image {
+          height: 150px;
+        }
+
+        .modal-title {
+          font-size: 1.25rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <nav>
+          <a href="#" data-key="brand">YOUR CAFE</a>
+        </nav>
+        <div>
+          <a href="#">👤</a>
+          <a href="#">🛒</a>
+        </div>
+      </header>
+
+      <!-- Language Selector -->
+      <div class="lang-selector">
+        <button onclick="setLanguage('en')" class="active">English</button>
+        <button onclick="setLanguage('am')">አማርኛ</button>
+        <button onclick="setLanguage('om')">Afaan Oromoo</button>
+        <button onclick="setLanguage('ti')">ትግርኛ</button>
+      </div>
+
+      <div class="swiper hero-swiper">
+        <div class="swiper-wrapper" id="hero-carousel">
+          <!-- Dynamic slides will be injected here -->
+        </div>
+
+        <!-- Pagination dots -->
+        <div class="swiper-pagination"></div>
+
+        <!-- Optional Navigation arrows -->
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+      </div>
+
+      <!-- Filter Navigation -->
+      <div class="filter-nav">
+        <a href="#" data-key="menu" data-filter="all" class="active">Menu</a>
+        <a href="#" data-key="snacks" data-filter="breakfast">Snacks</a>
+        <a href="#" data-key="drinks" data-filter="drinks">Drinks</a>
+      </div>
+
+      <div class="menu-grid">
+        <!-- Menu items will be dynamically populated -->
+      </div>
+
+      <!-- Modal -->
+      <div class="modal" id="menuModal">
+        <div class="modal-content">
+          <button class="modal-close" onclick="closeModal()">✕</button>
+          <img class="modal-image" id="modalImage" src="" alt="" />
+          <h2 class="modal-title" id="modalTitle"></h2>
+          <p class="modal-description" id="modalDescription"></p>
+          <div class="modal-price" id="modalPrice"></div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div>EN | AM | OM | TI</div>
+        <div>
+          <a href="#">🐦</a>
+          <a href="#">📘</a>
+          <a href="#">📸</a>
+        </div>
+      </div>
+    </div>
+    <script type="module">
+      import Swiper from "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.esm.browser.min.js";
+      new Swiper(".hero-swiper", {
+        /* config */
+      });
+    </script>
+    <script src="script.js"></script>
+  </body>
+</html>

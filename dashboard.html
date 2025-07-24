@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Menu Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <style>
+    .menu-item:hover {
+      transform: translateY(0);
+    }
+  </style>
+  <body>
+    <div class="container">
+      <header>
+        <nav>
+          <a href="#" data-key="brand">Menu Management</a>
+        </nav>
+      </header>
+
+      <div class="filter-nav">
+        <a href="#" class="active" data-filter="all">All Items</a>
+        <a href="#" data-filter="menu">Main Menu</a>
+        <a href="#" data-filter="breakfast">Breakfast</a>
+        <a href="#" data-filter="drinks">Drinks</a>
+      </div>
+
+      <div class="menu-grid" id="menuTable">
+        <!-- Menu items will be dynamically inserted here -->
+      </div>
+
+      <div class="loader" id="loader"></div>
+    </div>
+
+    <!-- Modal for editing -->
+    <div class="modal" id="editModal">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <h2 class="modal-title">Edit Menu Item</h2>
+
+        <form id="editForm">
+          <input type="hidden" id="editId" />
+          <div class="edit-modal-content">
+            <p style="display: inline">Item id:</p>
+            <p style="display: inline" id="itemId"></p>
+            <input type="text" id="editName" class="edit-modal-title" />
+            <input type="text" id="editPrice" class="edit-modal-price" />
+            <select
+              id="editCategory"
+              style="width: 100%; margin-bottom: 10px; padding: 5px"
+            >
+              <option value="menu">Main Menu</option>
+              <option value="breakfast">Breakfast</option>
+              <option value="drinks">Drinks</option>
+            </select>
+            <textarea
+              type="text"
+              id="editIngredients"
+              class="edit-modal-ingredients"
+            ></textarea>
+            <button type="submit" class="order-btn">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const token = localStorage.getItem("token");
+      const urlHandle = new URLSearchParams(window.location.search);
+      if (!token) {
+        window.location.href = "/login.html"; // or wherever your login page is
+      }
+      const restaurant_id = urlHandle.get("restaurant_id");
+
+      let menuData = [];
+      const loader = document.getElementById("loader");
+      const menuTable = document.getElementById("menuTable");
+      const modal = document.getElementById("editModal");
+
+      async function fetchMenuData() {
+        try {
+          loader.style.display = "block";
+          const response = await fetch("http://localhost:5000/menuData/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              restaurant_id: restaurant_id,
+            }),
+          });
+          const data = await response.json();
+          // menuData = Object.values(data).filter(
+          //   (item) => typeof item === "object"
+          // );
+          const menuData = data;
+          console.log(menuData);
+          localStorage.setItem("menuData", JSON.stringify(menuData));
+          displayMenuItems(menuData);
+        } catch (error) {
+          console.error("Error fetching menu data:", error);
+        } finally {
+          loader.style.display = "none";
+        }
+      }
+
+      function displayMenuItems(items) {
+        menuTable.innerHTML = "";
+        Object.entries(items).forEach(([key, item]) => {
+          const menuItem = document.createElement("div");
+          menuItem.className = "menu-item";
+          console.log(key);
+          menuItem.innerHTML = `
+                            <img src="${item.image}" alt="${item.name}">
+                            <div class="menu-item-content">
+                                <p id="itemStatic">Item number ${key}</p>
+                                <h3 class="menu-item-title">${item.name}</h3>
+                                <p class="menu-item-price">${item.price}</p>
+                                <p class="menu-item-category">Category: ${item.category}</p>
+                                <p class="menu-item-ingredients">Ingredients: ${item.ingredients.en}</p>
+                                <button onclick="editItem(${key})" class="order-btn" style="margin-top: 10px;">Edit</button>
+                            </div>
+                        `;
+          menuTable.appendChild(menuItem);
+        });
+      }
+
+      function editItem(id) {
+        menuData = localStorage.getItem("menuData");
+        menuData = JSON.parse(menuData);
+        const item = menuData?.[id];
+
+        if (item) {
+          document.getElementById("itemId").innerText = [id];
+          document.getElementById("editName").value = item.name;
+          document.getElementById("editPrice").value = item.price;
+          document.getElementById("editCategory").value = item.category;
+          document.getElementById("editIngredients").value =
+            item.ingredients.en;
+          modal.style.display = "flex";
+          modal.classList.add("active");
+        }
+      }
+
+      function closeModal() {
+        modal.classList.remove("active");
+        setTimeout(() => {
+          modal.style.display = "none";
+        }, 100);
+      }
+
+      async function editRequest(data) {
+        console.log(`edit requested:${JSON.stringify(data)}`);
+        try {
+          const edit_success = fetch("http://localhost:5000/editData/", {
+            method: ["PUT"],
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify(data),
+          });
+          if (!edit_success.ok) {
+            throw new Error("Network error while processing");
+          }
+          alert(edit_success.json());
+        } catch {
+          (e) => console.log(e);
+        } finally {
+          alert("request done");
+        }
+      }
+
+      document
+        .getElementById("editForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const id = document.getElementById("itemId").innerText;
+          console.log(id);
+          const updatedItem = {
+            [id]: {
+              name: document.getElementById("editName").value,
+              price: document.getElementById("editPrice").value,
+              category: document.getElementById("editCategory").value,
+              ingredients: document.getElementById("editIngredients").value,
+            },
+          };
+
+          // Here you would typically make an API call to update the item
+          // For now, we'll just update the local data
+          keys = Object.keys(updatedItem);
+          console.log(`here: ${JSON.stringify(updatedItem)}`);
+          if (Object.keys(updatedItem)[0] in menuData) {
+            suc = await editRequest(updatedItem);
+
+            if (suc) {
+              menuData[index] = { ...menuData[index], ...updatedItem };
+              localStorage.setItem("menuData", menuData);
+              menuData = localStorage.getItem("menuData");
+              displayMenuItems(menuData);
+              closeModal();
+            } else {
+              alert("Error, edit aborted");
+            }
+          } else {
+            console.log("item to update not found!");
+          }
+        });
+
+      document.querySelectorAll(".filter-nav a").forEach((filter) => {
+        filter.addEventListener("click", (e) => {
+          e.preventDefault();
+          const category = e.target.getAttribute("data-filter");
+
+          document
+            .querySelectorAll(".filter-nav a")
+            .forEach((f) => f.classList.remove("active"));
+          e.target.classList.add("active");
+
+          const filteredItems =
+            category === "all"
+              ? menuData
+              : menuData.filter((item) => item.category === category);
+          displayMenuItems(filteredItems);
+        });
+      });
+
+      // Initial load
+      fetchMenuData();
+    </script>
+  </body>
+</html>

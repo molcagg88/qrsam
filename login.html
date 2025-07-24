@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <nav>
+          <a href="/" data-key="brand">QR SAM</a>
+        </nav>
+      </header>
+
+      <div
+        class="modal-content"
+        style="display: block; opacity: 1; transform: scale(1)"
+      >
+        <h2 class="modal-title">Login</h2>
+        <form id="loginForm" class="description">
+          <div style="margin-bottom: 20px">
+            <input
+              type="username"
+              id="username"
+              placeholder="username"
+              required
+              style="
+                width: 100%;
+                padding: 12px;
+                border-radius: 8px;
+                border: 1px solid #333;
+                background-color: #1a1a1a;
+                color: #fff;
+              "
+            />
+          </div>
+          <div style="margin-bottom: 20px">
+            <input
+              type="password"
+              id="password"
+              placeholder="Password"
+              required
+              style="
+                width: 100%;
+                padding: 12px;
+                border-radius: 8px;
+                border: 1px solid #333;
+                background-color: #1a1a1a;
+                color: #fff;
+              "
+            />
+          </div>
+          <button type="submit" class="order-btn">Login</button>
+        </form>
+        <div
+          id="errorMessage"
+          class="description"
+          style="color: #ff4444; display: none"
+        ></div>
+        <div class="loader" id="loader"></div>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+          const loader = document.getElementById("loader");
+          const errorMessage = document.getElementById("errorMessage");
+
+          loader.style.display = "block";
+          errorMessage.style.display = "none";
+
+          try {
+            const response = await fetch("http://localhost:5000/login/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                username: username,
+                password: password,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              // Store the token if provided in the response
+              if (data.access_token) {
+                localStorage.setItem("token", data.access_token);
+              }
+              // Redirect to home page or dashboard
+              if (data.usr) {
+                window.location.href = `/dashboard.html?restaurant_id=${data.usr}`;
+              }
+            } else {
+              errorMessage.textContent =
+                data.detail || "Login failed. Please try again.";
+              errorMessage.style.display = "block";
+            }
+          } catch (error) {
+            errorMessage.textContent =
+              "An error occurred. Please try again later.";
+            errorMessage.style.display = "block";
+          } finally {
+            loader.style.display = "none";
+          }
+        });
+    </script>
+  </body>
+</html>
